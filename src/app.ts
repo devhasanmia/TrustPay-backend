@@ -1,5 +1,6 @@
 import express, { Application, Request, Response } from "express";
-import { UserContoller } from "./app/modules/user/user.controller";
+import router from "./app/routes";
+import globalErrorHandler from "./app/middlewares/globalErrorHandler";
 const app: Application = express();
 // Middlewares
 app.use(express.json());
@@ -12,6 +13,9 @@ app.get("/api/v1/health", (req: Request, res: Response) => {
   });
 });
 
-app.post("/api/v1/auth", UserContoller.Registration)
+// Route
+app.use("/api/v1", router)
+
+app.use(globalErrorHandler)
 
 export default app;

@@ -1,6 +1,6 @@
-type TUserInput = {
+export type TUser = {
     name: string;
-    pin: number;
+    pin: string;
     mobileNumber: string;
     email: string;
     accountType: "Agent" | "User";
