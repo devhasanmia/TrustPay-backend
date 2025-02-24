@@ -1,12 +1,13 @@
 import mongoose from "mongoose";
 import app from "./app";
 import config from "./config";
+import { seed } from "./app/utils/seeding";
 
 async function startServer() {
     try {
         await mongoose.connect(config.database_url as string);
         console.log("Connected to MongoDB.");
-
+        await seed();
         const server = app.listen(config.port, () => {
             console.log(`Server running on port ${config.port}.`);
         });

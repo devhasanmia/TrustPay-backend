@@ -10,4 +10,4 @@ router.post(
   UserContoller.Registration
 );
 
-export const authRoute = router;
+export const UserRoute = router;

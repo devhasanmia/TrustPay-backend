@@ -24,7 +24,7 @@ const userSchema = new Schema<TUser>({
   accountType: {
     type: String,
     required: true,
-    enum: ["Agent", "User"],
+    enum: ["Agent", "User", "Admin"],
     default: "User"
   },
   nid: {
@@ -36,25 +36,26 @@ const userSchema = new Schema<TUser>({
     type: Number,
     required: true,
     default: 0
+  },
+  status: {
+    type: String,
+    required: true,
+    enum: ["Pending", "Approve", "Blocked"],
+    default: "Approve"
   }
 });
 
 userSchema.pre("save", async function(next) {
   const data = this;
-//   Check User Data Available or Not
-
   try {
-   
     // Hashing the pin
     if (data.isModified("pin")) {
       data.pin = await bcrypt.hash(data.pin.toString(), 10);
     }
     if (data.accountType === "Agent") {
-      data.balance = 100000;
+      data.status = "Pending";
     } else if (data.accountType === "User") {
       data.balance = 40;
-    } else {
-      data.balance = 0;
     }
     next();
   } catch (err) {

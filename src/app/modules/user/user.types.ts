@@ -3,7 +3,8 @@ export type TUser = {
     pin: string;
     mobileNumber: string;
     email: string;
-    accountType: "Agent" | "User";
+    accountType: "Agent" | "User" | "Admin";
     nid: string;
     balance: number;
+    status: "Pending" | "Approve" | "Blocked";
 }
