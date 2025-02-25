@@ -1,13 +1,9 @@
 import express from "express";
-import { UserContoller } from "./user.controller";
-import { applyValidation } from "../../middlewares/applyValidation";
-import { userValidationSchema } from "./user.validation";
+import { UserController } from "./user.controller";
+
 const router = express.Router();
 
-router.post(
-  "/registration",
-  applyValidation(userValidationSchema),
-  UserContoller.Registration
-);
+router.get("/agents-approval-request", UserController.agentsApprovalRequest);
+router.put("/agents-approval/:id", UserController.agentsApproval);
 
 export const UserRoute = router;

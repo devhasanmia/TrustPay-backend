@@ -40,7 +40,7 @@ const userSchema = new Schema<TUser>({
   status: {
     type: String,
     required: true,
-    enum: ["Pending", "Approve", "Blocked"],
+    enum: ["Pending", "Approve", "Blocked", "Rejected"],
     default: "Approve"
   }
 });
@@ -48,7 +48,6 @@ const userSchema = new Schema<TUser>({
 userSchema.pre("save", async function(next) {
   const data = this;
   try {
-    // Hashing the pin
     if (data.isModified("pin")) {
       data.pin = await bcrypt.hash(data.pin.toString(), 10);
     }

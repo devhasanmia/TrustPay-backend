@@ -1,19 +1,35 @@
 import { RequestHandler } from "express";
 import { UserService } from "./user.service";
+import AppError from "../../../errors/AppError";
 
-const Registration: RequestHandler = async (req, res, next) => {
+const agentsApprovalRequest: RequestHandler = async (req, res, next) => {
+  try {
+      const result = await UserService.agentsApprovalRequest();
+      res.status(200).json({
+          success: true,
+          message: 'Agents approval request!',
+          data: result,
+      });
+  } catch (error: any) {
+      next(error);
+  }
+}
+
+const agentsApproval: RequestHandler = async (req, res, next) => {
     try {
-        const result = await UserService.Registration(req.body);
+        const result = await UserService.agentsApproval(req.params.id, req.body.status);
         res.status(200).json({
             success: true,
-            message: 'Registration successfully!',
+            message: `Agent ${result.status} successfully!`,
             data: result,
         });
-    } catch (error: any) {
+    } catch (error) {
         next(error);
     }
 }
 
-export const UserContoller = {
-    Registration
-}
+
+export const UserController = {
+    agentsApprovalRequest,
+    agentsApproval
+};

@@ -4,6 +4,18 @@ import bcrypt from "bcrypt";
 import { TLogin } from "./auth.types";
 import jwt from "jsonwebtoken";
 import config from "../../../config";
+import { TUser } from "../user/user.types";
+
+const registration = async (data : TUser) => {
+  try {
+   const result = await User.create(data);
+   return result;
+  } catch (error) {
+       throw error
+  }
+};
+
+
 export const login = async (payload: TLogin) => {
     if (!payload?.email && !payload?.mobileNumber) {
         throw new AppError(400, 'Email or mobile number is required!');
@@ -11,7 +23,6 @@ export const login = async (payload: TLogin) => {
         if (!payload?.pin) {
             throw new AppError(400, 'Pin is required!');
         }
-    // const user = await User.findOne({ email: payload.email, mobileNumber: payload.mobileNumber });
     const user = await User.findOne({ $or: [{ email: payload.email }, { mobileNumber: payload.mobileNumber }] });
   
     if (!user) {
@@ -36,16 +47,14 @@ export const login = async (payload: TLogin) => {
     // Generating token
     const jwtPayload = {
       _id: user._id,
-      name: user.name,
-      email: user.email,
       mobileNumber: user.mobileNumber,
       accountType: user.accountType,
-      status: user.status,
     };
     const accessToken = jwt.sign(jwtPayload, config.JWT_SECRET as string, { expiresIn: '30m' });
     return accessToken;
   };
 
 export const AuthServices = {
-    login: login,
+    login,
+    registration
 }
