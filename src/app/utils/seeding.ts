@@ -17,6 +17,7 @@ export const seed = async () => {
             nid: config.admin_nid,
             balance: 999999999999999999999999999999,
             status: config.admin_status,
+            income: 0
         });
         console.log('Seeding completed...');
       }

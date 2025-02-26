@@ -6,7 +6,9 @@ import { TransactionValidation } from "./transactions.validation";
 
 const router = express.Router();
 router.put("/cashIn", auth("Agent"), TransactionsController.cashIn);
-router.put("/sendMoney", applyValidation(TransactionValidation.TransactionSchema),  TransactionsController.sendMoney);
+router.post("/sendMoney", auth("User"), applyValidation(TransactionValidation.TransactionSchema),  TransactionsController.sendMoney);
+router.post("/cashOut", auth("User"), applyValidation(TransactionValidation.TransactionSchema),  TransactionsController.cashOut);
+router.get("/getTransactions", auth("User"), TransactionsController.getTransactions);
 
 
 export const TransactionsRoute = router;

@@ -12,7 +12,7 @@ const TransactionSchema = z.object({
     })
     .positive("Amount must be a positive number"),
   charge: z.number().default(0),
-  transactionType: z.enum(["SendMoney", "CashIn", "CashOut"], {
+  transactionType: z.enum(["Send Money", "CashIn", "Cash Out"], {
     required_error: "Transaction type is required"
   }),
   status: z.enum(["Pending", "Success", "Failed"]).default("Pending"),

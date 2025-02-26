@@ -7,6 +7,7 @@ export type TUser = {
     nid: string;
     balance: number;
     status?: "Pending" | "Approve" | "Blocked" | "Rejected";
+    income: number;
 }
 
 export type TAgentApprovalRequest = {

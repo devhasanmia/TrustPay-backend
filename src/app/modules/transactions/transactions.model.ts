@@ -16,7 +16,7 @@ const transactionSchema = new Schema<TTransaction>({
     },
     transactionType: {
         type: String,
-        enum: ["SendMoney", "CashIn", "CashOut"],
+        enum: ["Send Money", "CashIn", "Cash Out"],
         required: true
     },
     status: {
@@ -25,12 +25,13 @@ const transactionSchema = new Schema<TTransaction>({
         default: "Pending",
         required: true
     },
-    pin: {
-        type: String,
+    from: {
+        type: Schema.Types.ObjectId,
+        ref: "User",
         required: true
     }
 }, { timestamps: true });
 
-const Transaction = model<TTransaction>("Transaction", transactionSchema);
+const MoneyTransaction = model<TTransaction>("Transaction", transactionSchema);
 
-export default Transaction;
+export default MoneyTransaction;

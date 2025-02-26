@@ -42,6 +42,10 @@ const userSchema = new Schema<TUser>({
     required: true,
     enum: ["Pending", "Approve", "Blocked", "Rejected"],
     default: "Pending"
+  },
+  income:{
+    type: Number,
+    default: 0
   }
 }, {timestamps: true});
 
@@ -56,9 +60,6 @@ userSchema.pre("save", async function(next) {
     } else if (data.accountType === "User") {
       data.status = "Approve"
       data.balance = 40;
-    }else{
-      data.status = "Rejected";
-      data.balance = 0;
     }
     next();
   } catch (err) {
