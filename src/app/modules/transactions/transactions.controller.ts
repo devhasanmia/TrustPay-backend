@@ -46,7 +46,6 @@ const cashOut = async (req: Request, res: Response, next: NextFunction) => {
     }
 }
 
-
 const getTransactions = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { AuthorizedUser } = req;

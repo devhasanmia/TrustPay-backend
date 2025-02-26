@@ -42,7 +42,7 @@ const userSchema = new Schema<TUser>(
       type: String,
       required: true,
       enum: ["Pending", "Approve", "Blocked", "Rejected"],
-      default: "Pending"
+      default: "Approve"
     },
     income: {
       type: Number,
