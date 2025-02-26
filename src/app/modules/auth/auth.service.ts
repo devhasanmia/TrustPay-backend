@@ -8,6 +8,13 @@ import { TUser } from "../user/user.types";
 
 const registration = async (data : TUser) => {
   try {
+  if (data.accountType === 'User') {
+    data.balance = 40;
+  }else if (data.accountType === 'Agent') {
+    data.status = 'Pending';
+    data.balance =0;
+    data.income = 0;
+  }
    const result = await User.create(data);
    return result;
   } catch (error) {

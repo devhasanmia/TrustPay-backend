@@ -190,31 +190,23 @@ const cashOut = async (payload: TTransaction, AuthorizedUser: TAuthPayload) => {
   let session: ClientSession | null = null;
 
   try {
-    // Start a new session
     session = await User.startSession();
     session.startTransaction();
 
-    // 1. Validate User
     const user = await User.findOne({
       mobileNumber: AuthorizedUser.mobileNumber,
-      accountType: "User"
+      accountType: "User",
     }).session(session);
-    if (!user) {
-      throw new AppError(404, "User not found.");
-    }
+
+    if (!user) throw new AppError(404, "User not found.");
 
     // 2. Validate PIN
-    if (!payload.pin) {
-      throw new AppError(400, "PIN is required.");
-    }
+    if (!payload.pin) throw new AppError(400, "PIN is required.");
+    const isPinValid = await bcrypt.compare(payload.pin, user.pin);
+    if (!isPinValid) throw new AppError(400, "Invalid PIN.");
 
-    const pinMatch = await bcrypt.compare(payload.pin, user.pin);
-    if (!pinMatch) {
-      throw new AppError(400, "Invalid PIN.");
-    }
-
-    // 3. Calculate Charge and Total Deduction
-    const charge = (payload.amount * 1.5) / 100; // 1.5% charge
+    // 3. Calculate Charges
+    const charge = Math.round((payload.amount * 1.5) / 100); 
     const totalDeduction = payload.amount + charge;
 
     // 4. Check User Balance
@@ -226,53 +218,65 @@ const cashOut = async (payload: TTransaction, AuthorizedUser: TAuthPayload) => {
     const agent = await User.findOne({
       mobileNumber: payload.accountNumber,
       accountType: "Agent",
-      status: "Approve"
+      status: "Approve",
     }).session(session);
-    if (!agent) {
-      throw new AppError(404, "Agent not found.");
-    }
+
+    if (!agent) throw new AppError(404, "Agent not found or not approved.");
+
 
     // 6. Update User Balance
     user.balance -= totalDeduction;
     await user.save({ session });
 
     // 7. Update Agent Balance and Income
-    const agentIncome = (payload.amount * 1) / 100; // 1% agent income
-    agent.balance += payload.amount; // Agent receives the full amount
-    agent.income += agentIncome; // Agent earns 1% income
+    const agentIncome = Math.round((payload.amount * 1) / 100);
+    agent.balance += payload.amount;
+    agent.income += agentIncome;
+
+
+    agent.status = "Approve";
     await agent.save({ session });
 
     // 8. Update Admin Income
-    const adminIncome = (payload.amount * 0.5) / 100; // 0.5% admin income
+    const adminIncome = Math.round((payload.amount * 0.5) / 100); 
     const admin = await User.findOne({ accountType: "Admin" }).session(session);
+
     if (admin) {
       admin.income += adminIncome;
       await admin.save({ session });
+    } else {
+      console.warn("Admin account not found. Skipping admin income update.");
     }
 
-    // 9. Log the Cash-Out Transaction
-    await MoneyTransaction.create([{
-      accountNumber: AuthorizedUser.mobileNumber,
-      amount: payload.amount,
-      charge: charge,
-      transactionType: "Cash Out",
-      status: "Success",
-      from: user._id
-    }], { session });
+    await MoneyTransaction.create(
+      [
+        {
+          accountNumber: AuthorizedUser.mobileNumber,
+          amount: payload.amount,
+          charge: charge,
+          transactionType: "Cash Out",
+          status: "Success",
+          from: user._id,
+        },
+      ],
+      { session }
+    );
 
     // Commit the transaction
     await session.commitTransaction();
     session.endSession();
-
     return { message: "Cash-Out Successful!" };
   } catch (error) {
+    // Handle errors and rollback the transaction
     if (session) {
       await session.abortTransaction();
       session.endSession();
     }
+    console.error("Error during cash-out process:", error);
     throw error;
   }
 };
+
 
 export const TransactionsService = {
   cashIn,
