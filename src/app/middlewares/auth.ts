@@ -7,7 +7,7 @@ import { TAccountType } from "../modules/user/user.types";
 
 declare module "express" {
   interface Request {
-    user?: JwtPayload;
+    AuthorizedUser?: JwtPayload;
   }
 }
 
@@ -30,10 +30,7 @@ const auth = (...requiredAccountType: TAccountType[]) => {
         }
 
         const user = decoded as JwtPayload;
-        req.user = user;
-
-
-
+        req.AuthorizedUser = user;
         next();
       });
     } catch (error) {

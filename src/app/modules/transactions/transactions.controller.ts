@@ -5,11 +5,11 @@ import { TAuthPayload } from "../auth/auth.types";
 const cashIn = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { mobileNumber, amount, pin } = req.body;
-    const { user } = req;
-    if (!user) {
+    const { AuthorizedUser } = req;
+    if (!AuthorizedUser) {
       throw new Error("Unauthorized");
     }
-    const result = await TransactionsService.cashIn(mobileNumber, amount, pin, user as TAuthPayload);
+    const result = await TransactionsService.cashIn(mobileNumber, amount, pin, AuthorizedUser as TAuthPayload);
     res.status(200).json({
         success: true,
         message: result.message,
@@ -21,16 +21,13 @@ const cashIn = async (req: Request, res: Response, next: NextFunction) => {
 
 const sendMoney = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const { mobileNumber, amount, pin } = req.body;
-        const { user } = req;
-        if (!user) {
-            throw new Error("Unauthorized");
-        }
-        const result = await TransactionsService.sendMoney(mobileNumber, amount, pin, user as TAuthPayload);
-        res.status(200).json({
-            success: true,
-            message: result.message,
-        });
+      const payload = req.body;
+      const { AuthorizedUser } = req;
+      const result = await TransactionsService.sendMoney(payload, AuthorizedUser as TAuthPayload)
+      res.status(200).json({
+        success: true,
+        message: result.message,
+      })
     } catch (error) {
         next(error);
     }

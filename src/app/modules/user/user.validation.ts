@@ -17,5 +17,6 @@ export const userValidationSchema = z.object({
         .refine(val => val.length === 10 || val.length === 13 || val.length === 17, {
             message: "NID must be either 10, 13, or 17 digits long"
         }),
-    balance: z.number().min(0, "Balance cannot be negative").default(0)
+    balance: z.number().min(0, "Balance cannot be negative").default(0),
+    status: z.enum(["Pending", "Approve", "Blocked", "Rejected"]).default("Pending")
 });

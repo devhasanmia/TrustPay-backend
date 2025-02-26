@@ -6,7 +6,7 @@ export type TUser = {
     accountType: "Agent" | "User" | "Admin";
     nid: string;
     balance: number;
-    status: "Pending" | "Approve" | "Blocked" | "Rejected";
+    status?: "Pending" | "Approve" | "Blocked" | "Rejected";
 }
 
 export type TAgentApprovalRequest = {

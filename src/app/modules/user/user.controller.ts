@@ -1,6 +1,5 @@
 import { RequestHandler } from "express";
 import { UserService } from "./user.service";
-import AppError from "../../../errors/AppError";
 
 const agentsApprovalRequest: RequestHandler = async (req, res, next) => {
   try {
@@ -28,8 +27,23 @@ const agentsApproval: RequestHandler = async (req, res, next) => {
     }
 }
 
+const getAgents: RequestHandler = async (req, res, next) => {
+    try {
+        const result = await UserService.getAgents();
+        res.status(200).json({
+            success: true,
+            message: 'Agents fetched successfully!',
+            data: result,
+        });
+    } catch (error) {
+        next(error);
+    }
+}
+
+
 
 export const UserController = {
     agentsApprovalRequest,
-    agentsApproval
+    agentsApproval,
+    getAgents
 };

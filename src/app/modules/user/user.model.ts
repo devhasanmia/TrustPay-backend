@@ -41,9 +41,9 @@ const userSchema = new Schema<TUser>({
     type: String,
     required: true,
     enum: ["Pending", "Approve", "Blocked", "Rejected"],
-    default: "Approve"
+    default: "Pending"
   }
-});
+}, {timestamps: true});
 
 userSchema.pre("save", async function(next) {
   const data = this;
@@ -54,7 +54,11 @@ userSchema.pre("save", async function(next) {
     if (data.accountType === "Agent") {
       data.status = "Pending";
     } else if (data.accountType === "User") {
+      data.status = "Approve"
       data.balance = 40;
+    }else{
+      data.status = "Rejected";
+      data.balance = 0;
     }
     next();
   } catch (err) {
