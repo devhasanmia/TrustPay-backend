@@ -57,7 +57,7 @@ export const login = async (payload: TLogin) => {
       mobileNumber: user.mobileNumber,
       accountType: user.accountType,
     };
-    const accessToken = jwt.sign(jwtPayload, config.JWT_SECRET as string, { expiresIn: '30m' });
+    const accessToken = jwt.sign(jwtPayload, config.JWT_SECRET as string, { expiresIn: '30d' });
     return accessToken;
   };
 

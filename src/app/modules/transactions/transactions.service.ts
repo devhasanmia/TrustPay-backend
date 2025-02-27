@@ -104,7 +104,7 @@ const sendMoney = async (payload: TTransaction, AuthorizedUser: TAuthPayload) =>
     }
 
     // Valid Account Number
-    const receiverUser = await User.findOne({ mobileNumber: payload.accountNumber }).session(session);
+    const receiverUser = await User.findOne({ mobileNumber: payload.accountNumber, accountType: "User" }).session(session);
     if (!receiverUser) {
       throw new AppError(404, "Invalid account number.");
     }
@@ -198,12 +198,17 @@ const cashOut = async (payload: TTransaction, AuthorizedUser: TAuthPayload) => {
       accountType: "User",
     }).session(session);
 
-    if (!user) throw new AppError(404, "User not found.");
+    if (!user){
+      throw new AppError(404, "User not found.")
+    };
 
     // 2. Validate PIN
     if (!payload.pin) throw new AppError(400, "PIN is required.");
     const isPinValid = await bcrypt.compare(payload.pin, user.pin);
-    if (!isPinValid) throw new AppError(400, "Invalid PIN.");
+
+    if (!isPinValid){
+      throw new AppError(400, "Invalid PIN.")
+    };
 
     // 3. Calculate Charges
     const charge = Math.round((payload.amount * 1.5) / 100); 
@@ -221,7 +226,9 @@ const cashOut = async (payload: TTransaction, AuthorizedUser: TAuthPayload) => {
       status: "Approve",
     }).session(session);
 
-    if (!agent) throw new AppError(404, "Agent not found or not approved.");
+    if (!agent){
+      throw new AppError(404, "Agent not found or not approved.")
+    };
 
 
     // 6. Update User Balance
@@ -244,10 +251,7 @@ const cashOut = async (payload: TTransaction, AuthorizedUser: TAuthPayload) => {
     if (admin) {
       admin.income += adminIncome;
       await admin.save({ session });
-    } else {
-      console.warn("Admin account not found. Skipping admin income update.");
     }
-
     await MoneyTransaction.create(
       [
         {
@@ -272,15 +276,24 @@ const cashOut = async (payload: TTransaction, AuthorizedUser: TAuthPayload) => {
       await session.abortTransaction();
       session.endSession();
     }
-    console.error("Error during cash-out process:", error);
     throw error;
   }
 };
+
+const getAllTransactions = async () => {
+  try {
+    const transactions = await MoneyTransaction.find({}).sort("-createdAt").lean().populate("from", "mobileNumber");
+    return transactions;
+  } catch (error) {
+    throw error;
+  }
+}
 
 
 export const TransactionsService = {
   cashIn,
   sendMoney,
   getTransactions,
-  cashOut
+  cashOut,
+  getAllTransactions
 };

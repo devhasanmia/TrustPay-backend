@@ -5,10 +5,11 @@ import { applyValidation } from "../../middlewares/applyValidation";
 import { TransactionValidation } from "./transactions.validation";
 
 const router = express.Router();
-router.put("/cashIn", auth("Agent"), TransactionsController.cashIn);
+router.put("/cashIn", auth("Agent",), TransactionsController.cashIn);
 router.post("/sendMoney", auth("User"), applyValidation(TransactionValidation.TransactionSchema),  TransactionsController.sendMoney);
 router.post("/cashOut", auth("User"), applyValidation(TransactionValidation.TransactionSchema),  TransactionsController.cashOut);
-router.get("/getTransactions", auth("User"), TransactionsController.getTransactions);
+router.get("/getTransactions", auth("User", "Admin"), TransactionsController.getTransactions);
+router.get("/getAllTransactions",auth("Admin") ,TransactionsController.getAllTransactions);
 
 
 export const TransactionsRoute = router;

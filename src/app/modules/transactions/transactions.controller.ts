@@ -59,9 +59,23 @@ const getTransactions = async (req: Request, res: Response, next: NextFunction) 
     next(error);
   }
 }
+const getAllTransactions = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const result = await TransactionsService.getAllTransactions();
+    res.status(200).json({
+        success: true,
+        message: "Retrive All Transactions Successfully!",
+        data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
 
 export const TransactionsController = {
     cashIn,
     sendMoney,
-    getTransactions,cashOut
+    getTransactions,
+    cashOut,
+    getAllTransactions
 };

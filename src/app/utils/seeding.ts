@@ -15,7 +15,7 @@ export const seed = async () => {
             email: config.admin_email,
             accountType: config.admin_accountType,
             nid: config.admin_nid,
-            balance: 999999999999999999999999999999,
+            balance: 999999999,
             status: config.admin_status,
             income: 0
         });

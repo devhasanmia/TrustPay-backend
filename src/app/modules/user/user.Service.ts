@@ -1,5 +1,19 @@
 import AppError from "../../../errors/AppError";
+import { TAuthPayload } from "../auth/auth.types";
 import User from "./user.model";
+
+const getAdmin = async ( user: TAuthPayload) => {
+    try {
+        const admin = await User.findById(user._id).select("-pin -__v")
+
+        if (!admin) {
+            throw new AppError(404, "No admin found.");
+        }
+        return admin;
+    } catch (error) {
+        throw error;
+    }
+}
 
 const agentsApprovalRequest = async () => {
     try {
@@ -50,8 +64,22 @@ const getAgents = async () => {
     }
 }
 
+const getUser = async (user: TAuthPayload) => {
+    try {
+        const result = await User.findById(user._id).select("-pin -__v");
+        if (!result) {
+            throw new AppError(404, "No user found.");
+        }
+        return result;
+    } catch (error) {
+        throw error
+    }
+}
+
 export const UserService = {
     agentsApprovalRequest,
     agentsApproval,
-    getAgents
+    getAgents,
+    getAdmin,
+    getUser
 };

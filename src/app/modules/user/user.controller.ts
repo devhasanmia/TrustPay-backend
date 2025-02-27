@@ -1,5 +1,6 @@
-import { RequestHandler } from "express";
+import { NextFunction, Request, RequestHandler, Response } from "express";
 import { UserService } from "./user.service";
+import { TAuthPayload } from "../auth/auth.types";
 
 const agentsApprovalRequest: RequestHandler = async (req, res, next) => {
   try {
@@ -40,10 +41,39 @@ const getAgents: RequestHandler = async (req, res, next) => {
     }
 }
 
+const getAdmin = async (req: Request, res: Response, next:NextFunction) => {
+    try {
+        const { AuthorizedUser } = req;
+        const result = await UserService.getAdmin(AuthorizedUser as TAuthPayload);
+        res.status(200).json({
+            success: true,
+            message: 'Admin fetched successfully!',
+            data: result,
+        });
+    } catch (error) {
+        next(error);
+    }
+}
+
+const getUser = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { AuthorizedUser } = req;
+        const result = await UserService.getUser(AuthorizedUser as TAuthPayload);
+        res.status(200).json({
+            success: true,
+            message: 'User fetched successfully!',
+            data: result,
+        });
+    } catch (error) {
+        next(error);
+    }
+}
 
 
 export const UserController = {
     agentsApprovalRequest,
     agentsApproval,
-    getAgents
+    getAgents,
+    getAdmin,
+    getUser
 };
