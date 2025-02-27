@@ -63,6 +63,18 @@ const getAgents = async () => {
         throw error;
     }
 }
+const getAuthAgent = async (user: TAuthPayload) => {
+    try {
+        const authAgent = await User.findById(user._id).select("-pin -__v")
+        if (!authAgent) {
+            throw new AppError(404, "No authenticated agent found.");
+        }
+        const result = await User.find({ accountType: "Agent", status: "Approve"}).select("-pin -__v").sort("-createdAt");
+        return result;
+    } catch (error) {
+        throw error;
+    }
+}
 
 const getUser = async (user: TAuthPayload) => {
     try {
@@ -81,5 +93,6 @@ export const UserService = {
     agentsApproval,
     getAgents,
     getAdmin,
-    getUser
+    getUser,
+    getAuthAgent
 };

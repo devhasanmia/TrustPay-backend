@@ -54,6 +54,19 @@ const getAdmin = async (req: Request, res: Response, next:NextFunction) => {
         next(error);
     }
 }
+const getAgentown = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { AuthorizedUser } = req;
+        const result = await UserService.getAuthAgent(AuthorizedUser as TAuthPayload);
+        res.status(200).json({
+            success: true,
+            message: 'Agent fetched successfully!',
+            data: result,
+        });
+    } catch (error) {
+        next(error);
+    }
+} 
 
 const getUser = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -75,5 +88,6 @@ export const UserController = {
     agentsApproval,
     getAgents,
     getAdmin,
-    getUser
+    getUser,
+    getAgentown
 };

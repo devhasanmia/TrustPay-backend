@@ -4,12 +4,9 @@ import { TAuthPayload } from "../auth/auth.types";
 
 const cashIn = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { mobileNumber, amount, pin } = req.body;
+    const payload = req.body;
     const { AuthorizedUser } = req;
-    if (!AuthorizedUser) {
-      throw new Error("Unauthorized");
-    }
-    const result = await TransactionsService.cashIn(mobileNumber, amount, pin, AuthorizedUser as TAuthPayload);
+    const result = await TransactionsService.cashIn(payload, AuthorizedUser as TAuthPayload);
     res.status(200).json({
         success: true,
         message: result.message,

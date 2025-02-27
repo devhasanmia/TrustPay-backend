@@ -17,7 +17,7 @@ export type TTransaction = {
     amount: number; 
     charge?: number; 
     pin?: string; 
-    transactionType: TransactionType; 
+    transactionType: "Send Money" | "CashIn" | "Cash Out";  
     status?: TransactionStatus; 
     from?: Types.ObjectId;
 };

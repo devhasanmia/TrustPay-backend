@@ -6,66 +6,91 @@ import { TTransaction } from "./transactions.types";
 import { ClientSession } from 'mongoose';
 import MoneyTransaction from "./transactions.model";
 
-const cashIn = async (
-  mobileNumber: string,
-  amount: number,
-  pin: string,
-  user: TAuthPayload
-) => {
+const cashIn = async (payload: TTransaction, user: TAuthPayload) => {
+  let session: ClientSession | null = null;
   try {
-    if (!mobileNumber || !amount || !pin || !user) {
-      throw new Error("Mobile number Amount PIN and User Info are required.");
+    // Start a session
+    session = await User.startSession();
+    session.startTransaction();
+
+    // Check if the user exists
+    const existingUser = await User.findOne({
+      mobileNumber: payload.accountNumber,
+      accountType: "User",
+    }).session(session);
+
+    if (!existingUser) {
+      throw new AppError(404, "User Account not found.");
     }
-    // Check User Exist
-    const isUserExist = await User.findOne({
-      mobileNumber,
-      accountType: "User"
-    });
-    if (!isUserExist) {
-      throw new AppError(404, "User not found.");
+
+    // Check if the agent exists
+    const agent = await User.findOne({
+      mobileNumber: user.mobileNumber, // Use the logged-in user's mobile number
+      accountType: "Agent", // Ensure the account type is "Agent"
+      status: "Approve", // Ensure the agent is approved
+    }).session(session);
+
+    if (!agent) {
+      throw new AppError(404, "Agent not found or not approved.");
     }
-    // Cash-in
+
+    // Validate Agent PIN
+    if (!payload.pin) {
+      throw new AppError(400, "PIN is required.");
+    }
+    const isPinValid = await bcrypt.compare(payload.pin, agent.pin);
+    if (!isPinValid) {
+      throw new AppError(400, "Invalid PIN.");
+    }
+
+    // Check Agent Balance
+    if (agent.balance < payload.amount) {
+      throw new AppError(400, "Agent has insufficient balance to perform this transaction.");
+    }
+
+    // Update User Balance (Increase)
     await User.findOneAndUpdate(
-      { mobileNumber },
-      { $inc: { balance: amount } },
-      { new: true }
+      { _id: existingUser._id },
+      { $inc: { balance: payload.amount } }, 
+      { new: true, session }
     ).select("-pin -__v");
 
-    // Agent Balance Update
-    const agent = await User.findOne({
-      mobileNumber: user.mobileNumber,
-      accountType: "Agent"
-    });
-    if (!agent) {
-      throw new AppError(404, "Agent not found.");
-    }
-    // Check Agent PIN
-    const agentPinMatch = await bcrypt.compare(pin, agent.pin);
-    if (!agentPinMatch) {
-      throw new AppError(
-        400,
-        "The PIN you entered is incorrect. Please try again."
-      );
-    }
-    // Agent Balance Check
-    if (agent.balance < amount) {
-      throw new AppError(400, "Insufficient balance.");
-    }
-    // Agent Balance Update
+    // Update Agent Balance (Decrease)
     await User.findOneAndUpdate(
       { mobileNumber: user.mobileNumber },
-      { $inc: { balance: -amount } },
-      { new: true }
+      { $inc: { balance: -payload.amount } }, 
+      { new: true, session }
     ).select("-pin -__v");
 
+    // Log the transaction
+    await MoneyTransaction.create(
+      [
+        {
+          accountNumber: existingUser.mobileNumber, 
+          amount: payload.amount,
+          transactionType: "CashIn",
+          status: "Success",
+          from: agent._id,
+        },
+      ],
+      { session }
+    );
+
+    // Commit the transaction
+    await session.commitTransaction();
+    session.endSession();
+
     return {
-      message: "Cash-in successful."
+      message: "Cash-in successful.",
     };
   } catch (error) {
+    if (session) {
+      await session.abortTransaction();
+      session.endSession();
+    }
     throw error;
   }
 };
-
 
 
 const sendMoney = async (payload: TTransaction, AuthorizedUser: TAuthPayload) => {
